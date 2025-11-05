@@ -9,6 +9,10 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
+app.get("/", (req, res) => {
+  res.send("InfoHub Backend is running!");
+});
+
 // Weather API
 app.get("/api/weather", async (req, res) => {
   const city = req.query.city;
