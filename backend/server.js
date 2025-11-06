@@ -84,20 +84,17 @@ app.get("/api/currency", async (req, res) => {
 
 // QUOTE
 // QUOTE (Auto-generated from Quotable API)
-// QUOTE - using Quotable API with fallback
+// QUOTE - using ZenQuotes API with fallback
 app.get("/api/quote", async (req, res) => {
   try {
-    const response = await axios.get("https://api.quotable.io/random", {
-      timeout: 5000,
-      httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }), // bypass SSL issues
-    });
+    const response = await axios.get("https://zenquotes.io/api/random");
+    const data = response.data[0];
     res.json({
-      quote: response.data.content,
-      author: response.data.author || "Unknown",
+      quote: data.q,
+      author: data.a || "Unknown",
     });
   } catch (err) {
     console.error("Quote error:", err.message);
-
     // fallback local quotes
     const fallbackQuotes = [
       { text: "Believe in yourself!", author: "Anonymous" },
@@ -110,6 +107,7 @@ app.get("/api/quote", async (req, res) => {
     res.json({ quote: random.text, author: random.author });
   }
 });
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
