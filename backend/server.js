@@ -84,29 +84,48 @@ app.get("/api/currency", async (req, res) => {
 
 // QUOTE
 // QUOTE (Auto-generated from Quotable API)
-// QUOTE - using ZenQuotes API with fallback
+// QUOTE - Multi-source with fallback
 app.get("/api/quote", async (req, res) => {
   try {
-    const response = await axios.get("https://zenquotes.io/api/random");
-    const data = response.data[0];
-    res.json({
-      quote: data.q,
-      author: data.a || "Unknown",
+    // Try ZenQuotes first
+    const zenResponse = await axios.get("https://zenquotes.io/api/random");
+    const zenData = zenResponse.data[0];
+    return res.json({
+      quote: zenData.q,
+      author: zenData.a || "Unknown",
+      source: "ZenQuotes",
     });
-  } catch (err) {
-    console.error("Quote error:", err.message);
-    // fallback local quotes
-    const fallbackQuotes = [
-      { text: "Believe in yourself!", author: "Anonymous" },
-      { text: "Keep pushing forward!", author: "Anonymous" },
-      { text: "Every day is a new opportunity.", author: "Unknown" },
-      { text: "Dream it. Wish it. Do it.", author: "Anonymous" },
-      { text: "Courage is resistance to fear, mastery of fear—not absence of fear.", author: "Mark Twain" },
-    ];
-    const random = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
-    res.json({ quote: random.text, author: random.author });
+  } catch (zenErr) {
+    console.error("ZenQuotes error:", zenErr.message);
   }
+
+  try {
+    // Fallback to Quotable API if ZenQuotes fails
+    const quotableResponse = await axios.get("https://api.quotable.io/random", {
+      timeout: 5000,
+      httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }),
+    });
+    return res.json({
+      quote: quotableResponse.data.content,
+      author: quotableResponse.data.author || "Unknown",
+      source: "Quotable",
+    });
+  } catch (quotableErr) {
+    console.error("Quotable error:", quotableErr.message);
+  }
+
+  // Final local fallback
+  const fallbackQuotes = [
+    { text: "Believe in yourself!", author: "Anonymous" },
+    { text: "Keep pushing forward!", author: "Anonymous" },
+    { text: "Every day is a new opportunity.", author: "Unknown" },
+    { text: "Dream it. Wish it. Do it.", author: "Anonymous" },
+    { text: "Courage is resistance to fear, mastery of fear—not absence of fear.", author: "Mark Twain" },
+  ];
+  const random = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+  res.json({ quote: random.text, author: random.author, source: "Local Fallback" });
 });
+
 
 
 
