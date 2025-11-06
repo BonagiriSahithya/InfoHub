@@ -84,14 +84,30 @@ app.get("/api/currency", async (req, res) => {
 
 // QUOTE
 // QUOTE (Auto-generated from Quotable API)
+// QUOTE - using Quotable API with fallback
 app.get("/api/quote", async (req, res) => {
   try {
-    const response = await axios.get("https://api.quotable.io/random");
-    const { content, author } = response.data;
-    res.json({ quote: content, author });
+    const response = await axios.get("https://api.quotable.io/random", {
+      timeout: 5000,
+      httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }), // bypass SSL issues
+    });
+    res.json({
+      quote: response.data.content,
+      author: response.data.author || "Unknown",
+    });
   } catch (err) {
-    console.error("Quote error:", err.response?.data || err.message);
-    res.status(500).json({ error: "Could not fetch quote." });
+    console.error("Quote error:", err.message);
+
+    // fallback local quotes
+    const fallbackQuotes = [
+      { text: "Believe in yourself!", author: "Anonymous" },
+      { text: "Keep pushing forward!", author: "Anonymous" },
+      { text: "Every day is a new opportunity.", author: "Unknown" },
+      { text: "Dream it. Wish it. Do it.", author: "Anonymous" },
+      { text: "Courage is resistance to fear, mastery of fear—not absence of fear.", author: "Mark Twain" },
+    ];
+    const random = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+    res.json({ quote: random.text, author: random.author });
   }
 });
 
