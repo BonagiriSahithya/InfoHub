@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function Currency() {
   const [amount, setAmount] = useState("");
   const [to, setTo] = useState("USD");
@@ -12,16 +14,14 @@ export default function Currency() {
     setConverted(null);
     setRate(null);
     setError("");
-
     if (!amount) return setError("Please enter an amount.");
 
     try {
-      const res = await axios.get("http://localhost:5000/api/currency", {
-        params: { amount, to },
-      });
+      const res = await axios.get(`${API_URL}/api/currency`, { params: { amount, to } });
       setConverted(res.data.converted);
       setRate(res.data.rate);
-    } catch {
+    } catch (err) {
+      console.error("convert error:", err.response?.data || err.message);
       setError("Conversion failed. Try again.");
     }
   };
@@ -30,12 +30,7 @@ export default function Currency() {
     <div className="card">
       <h2>Currency Converter 💱</h2>
       <div className="input-group">
-        <input
-          type="number"
-          placeholder="Amount in INR"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
+        <input type="number" placeholder="Amount in INR" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <select value={to} onChange={(e) => setTo(e.target.value)}>
           <option value="USD">USD</option>
           <option value="EUR">EUR</option>
@@ -47,7 +42,7 @@ export default function Currency() {
       {converted && (
         <div className="result">
           <p>{amount} INR = {converted} {to}</p>
-          <p>1 INR = {rate.toFixed(4)} {to}</p>
+          <p>1 INR = {rate.toFixed(6)} {to}</p>
         </div>
       )}
     </div>

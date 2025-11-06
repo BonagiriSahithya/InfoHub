@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function Weather() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
@@ -12,9 +14,10 @@ export default function Weather() {
     if (!city) return setError("Enter a city name");
 
     try {
-      const res = await axios.get(`http://localhost:5000/api/weather?city=${city}`);
+      const res = await axios.get(`${API_URL}/api/weather`, { params: { city } });
       setWeather(res.data);
-    } catch {
+    } catch (err) {
+      console.error("getWeather error:", err.response?.data || err.message);
       setError("Could not fetch weather.");
     }
   };
@@ -42,9 +45,9 @@ export default function Weather() {
           <p>Weather: {weather.weather[0].description}</p>
           <p>Humidity: {weather.main.humidity}%</p>
           <p>Wind Speed: {weather.wind.speed} m/s</p>
-          <img 
-            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} 
-            alt="weather icon" 
+          <img
+            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+            alt="weather icon"
           />
         </div>
       )}
