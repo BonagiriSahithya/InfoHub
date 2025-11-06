@@ -7,23 +7,36 @@ require("dotenv").config();
 const app = express();
 
 // Allowed origins: local dev + deployed frontend (add your real Vercel URL)
-const allowedOrigins = [
-  process.env.FRONTEND_URL,             // set this in .env on Render to your Vercel URL
-  "http://localhost:5173",              // Vite dev server
-  "http://localhost:3000",              // in case CRA used
-  "https://info-hub-sigma.vercel.app"   // your deployed Vercel frontend (optional safe fallback)
-].filter(Boolean);
+// top of server.js (replace existing CORS code)
+const allowedFromEnv = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const allowAll = allowedFromEnv.includes("*");
+
+// always allow local dev origins
+const defaultAllowed = ["http://localhost:5173", "http://localhost:3000"];
+
+const allowedOrigins = new Set([
+  ...defaultAllowed,
+  ...allowedFromEnv.filter(s => s !== "*"),
+]);
 
 app.use(cors({
-  origin: function(origin, callback){
-    if (!origin) return callback(null, true); // allow tools like curl/postman or server-to-server
-    if (allowedOrigins.indexOf(origin) !== -1) {
+  origin: function(origin, callback) {
+    // allow server-to-server requests or tools like curl/postman
+    if (!origin) return callback(null, true);
+
+    if (allowAll || allowedOrigins.has(origin)) {
       return callback(null, true);
-    } else {
-      return callback(new Error("CORS blocked: origin " + origin));
     }
+
+    // not allowed
+    return callback(new Error("CORS blocked: origin " + origin));
   }
 }));
+
 
 app.use(express.json());
 
