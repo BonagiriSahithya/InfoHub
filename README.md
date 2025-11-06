@@ -55,8 +55,7 @@ Express.js backend with API routes consumed by the React frontend.
 
 * 🌤️ [OpenWeatherMap API](https://openweathermap.org/api)
 * 💱 [ExchangeRate API](https://exchangerate.host)
-* 💬 [Quotable API](https://api.quotable.io/random)
-
+* 💬 Custom Quotes API (built-in to backend)
 ---
 
 ## ⚙️ Setup Instructions (Local Development)
