@@ -83,16 +83,17 @@ app.get("/api/currency", async (req, res) => {
 });
 
 // QUOTE
-app.get("/api/quote", (req, res) => {
-  const quotes = [
-    { text: "Believe in yourself!", author: "Anonymous" },
-    { text: "Keep pushing forward!", author: "Anonymous" },
-    { text: "Every day is a new opportunity.", author: "Unknown" },
-    { text: "Dream it. Wish it. Do it.", author: "Anonymous" },
-    { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", author: "Winston Churchill" },
-  ];
-  const random = quotes[Math.floor(Math.random() * quotes.length)];
-  res.json({ quote: random.text, author: random.author });
+// QUOTE (Auto-generated from Quotable API)
+app.get("/api/quote", async (req, res) => {
+  try {
+    const response = await axios.get("https://api.quotable.io/random");
+    const { content, author } = response.data;
+    res.json({ quote: content, author });
+  } catch (err) {
+    console.error("Quote error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Could not fetch quote." });
+  }
 });
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
